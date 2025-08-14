@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+interface ParamsContext {
+  params: { id: string };
+}
+
+export async function PUT(request: NextRequest, context: ParamsContext) {
   try {
+    const { id } = context.params;
     const body = await request.json();
     const { homeScore, awayScore, goals } = body;
 
@@ -14,10 +16,12 @@ export async function PUT(
     }
 
     const match = await db.match.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         result: {
-          include: { goals: { include: { player: true } } }
+          include: {
+            goals: { include: { player: true } }
+          }
         }
       }
     });
@@ -35,11 +39,11 @@ export async function PUT(
       await db.goal.deleteMany({ where: { matchResultId: match.result.id } });
     } else {
       matchResult = await db.matchResult.create({
-        data: { matchId: params.id, homeScore, awayScore }
+        data: { matchId: id, homeScore, awayScore }
       });
     }
 
-    if (goals?.length) {
+    if (goals && goals.length > 0) {
       await Promise.all(
         goals.map((goal: any) =>
           db.goal.create({
@@ -54,16 +58,20 @@ export async function PUT(
     }
 
     await db.match.update({
-      where: { id: params.id },
+      where: { id },
       data: { isCompleted: true }
     });
 
     const updatedMatch = await db.match.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         homeTeam: true,
         awayTeam: true,
-        result: { include: { goals: { include: { player: true } } } }
+        result: {
+          include: {
+            goals: { include: { player: true } }
+          }
+        }
       }
     });
 
@@ -74,14 +82,15 @@ export async function PUT(
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, context: ParamsContext) {
   try {
+    const { id } = context.params;
+
     const match = await db.match.findUnique({
-      where: { id: params.id },
-      include: { result: { include: { goals: true } } }
+      where: { id },
+      include: {
+        result: { include: { goals: true } }
+      }
     });
 
     if (!match) {
@@ -93,11 +102,11 @@ export async function DELETE(
       await db.matchResult.delete({ where: { id: match.result.id } });
     }
 
-    await db.match.delete({ where: { id: params.id } });
+    await db.match.delete({ where: { id } });
 
     return NextResponse.json({
       message: "Match deleted successfully",
-      deletedMatchId: params.id
+      deletedMatchId: id
     });
   } catch (error) {
     console.error("Error deleting match:", error);
