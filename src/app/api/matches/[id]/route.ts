@@ -10,16 +10,17 @@ export async function PUT(
     const { homeScore, awayScore, goals } = body;
 
     if (homeScore === undefined || awayScore === undefined) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
     const match = await db.match.findUnique({
       where: { id: params.id },
       include: {
-        result: { include: { goals: { include: { player: true } } } }
+        result: {
+          include: {
+            goals: { include: { player: true } }
+          }
+        }
       }
     });
 
@@ -40,7 +41,7 @@ export async function PUT(
       });
     }
 
-    if (goals && goals.length > 0) {
+    if (goals?.length) {
       await Promise.all(
         goals.map((goal: any) =>
           db.goal.create({
@@ -64,17 +65,18 @@ export async function PUT(
       include: {
         homeTeam: true,
         awayTeam: true,
-        result: { include: { goals: { include: { player: true } } } }
+        result: {
+          include: {
+            goals: { include: { player: true } }
+          }
+        }
       }
     });
 
     return NextResponse.json(updatedMatch);
   } catch (error) {
     console.error("Error updating match result:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
@@ -85,7 +87,9 @@ export async function DELETE(
   try {
     const match = await db.match.findUnique({
       where: { id: params.id },
-      include: { result: { include: { goals: true } } }
+      include: {
+        result: { include: { goals: true } }
+      }
     });
 
     if (!match) {
@@ -105,9 +109,6 @@ export async function DELETE(
     });
   } catch (error) {
     console.error("Error deleting match:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
