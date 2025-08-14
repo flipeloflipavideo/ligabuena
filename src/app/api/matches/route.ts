@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       scheduleStart,
       seasonEnd,
       league.season.nonSchoolDays,
-      [5],
+      [5], // viernes
       Math.ceil(teams.length / 2)
     );
 
@@ -65,7 +65,16 @@ export async function POST(request: NextRequest) {
     const daysNeededPerCycle = Math.ceil(totalMatchesPerCycle / maxMatchesPerDay);
     const totalCycles = Math.floor(availableDates.length / daysNeededPerCycle);
 
-    const scheduledMatches: any[] = [];
+    const scheduledMatches: {
+      leagueId: string;
+      homeTeamId: string;
+      awayTeamId: string;
+      matchDate: Date;
+      venue: string;
+      round: number;
+      cycle: number;
+    }[] = [];
+
     let dateIndex = 0;
     let totalMatchesScheduled = 0;
 
@@ -157,8 +166,8 @@ export async function POST(request: NextRequest) {
       totalTeams: teams.length,
       seasonDates: { start: league.season.startDate, end: league.season.endDate },
       scheduledDates: {
-        first: scheduledMatches[0]?.matchDate,
-        last: scheduledMatches[scheduledMatches.length - 1]?.matchDate
+        first: scheduledMatches[0]?.matchDate.toISOString(),
+        last: scheduledMatches[scheduledMatches.length - 1]?.matchDate.toISOString()
       },
       teams: teams.map(team => ({
         id: team.id,
