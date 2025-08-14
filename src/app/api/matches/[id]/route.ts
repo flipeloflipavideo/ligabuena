@@ -1,28 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 
-interface ParamsContext {
-  params: { id: string };
-}
-
-export async function PUT(request: NextRequest, context: ParamsContext) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
-    const { id } = context.params;
     const body = await request.json();
     const { homeScore, awayScore, goals } = body;
 
     if (homeScore === undefined || awayScore === undefined) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
     }
 
     const match = await db.match.findUnique({
-      where: { id },
+      where: { id: params.id },
       include: {
-        result: {
-          include: {
-            goals: { include: { player: true } }
-          }
-        }
+        result: { include: { goals: { include: { player: true } } } }
       }
     });
 
@@ -39,7 +36,7 @@ export async function PUT(request: NextRequest, context: ParamsContext) {
       await db.goal.deleteMany({ where: { matchResultId: match.result.id } });
     } else {
       matchResult = await db.matchResult.create({
-        data: { matchId: id, homeScore, awayScore }
+        data: { matchId: params.id, homeScore, awayScore }
       });
     }
 
@@ -58,39 +55,37 @@ export async function PUT(request: NextRequest, context: ParamsContext) {
     }
 
     await db.match.update({
-      where: { id },
+      where: { id: params.id },
       data: { isCompleted: true }
     });
 
     const updatedMatch = await db.match.findUnique({
-      where: { id },
+      where: { id: params.id },
       include: {
         homeTeam: true,
         awayTeam: true,
-        result: {
-          include: {
-            goals: { include: { player: true } }
-          }
-        }
+        result: { include: { goals: { include: { player: true } } } }
       }
     });
 
     return NextResponse.json(updatedMatch);
   } catch (error) {
     console.error("Error updating match result:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 
-export async function DELETE(request: NextRequest, context: ParamsContext) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
-    const { id } = context.params;
-
     const match = await db.match.findUnique({
-      where: { id },
-      include: {
-        result: { include: { goals: true } }
-      }
+      where: { id: params.id },
+      include: { result: { include: { goals: true } } }
     });
 
     if (!match) {
@@ -102,14 +97,17 @@ export async function DELETE(request: NextRequest, context: ParamsContext) {
       await db.matchResult.delete({ where: { id: match.result.id } });
     }
 
-    await db.match.delete({ where: { id } });
+    await db.match.delete({ where: { id: params.id } });
 
     return NextResponse.json({
       message: "Match deleted successfully",
-      deletedMatchId: id
+      deletedMatchId: params.id
     });
   } catch (error) {
     console.error("Error deleting match:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
