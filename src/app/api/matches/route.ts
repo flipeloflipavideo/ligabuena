@@ -35,10 +35,7 @@ export async function POST(request: NextRequest) {
 
     const existingMatches = await db.match.findMany({ where: { leagueId } });
     if (existingMatches.length > 0) {
-      return NextResponse.json(
-        { error: "Matches already exist for this league. Delete existing matches first." },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Matches already exist for this league. Delete existing matches first." }, { status: 400 });
     }
 
     const teams = league.teams;
@@ -54,15 +51,12 @@ export async function POST(request: NextRequest) {
       scheduleStart,
       seasonEnd,
       league.season.nonSchoolDays,
-      [5], // Friday games
+      [5],
       Math.ceil(teams.length / 2)
     );
 
     if (availableDates.length === 0) {
-      return NextResponse.json(
-        { error: "No available dates found for scheduling matches." },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "No available dates found for scheduling matches." }, { status: 400 });
     }
 
     const matchesPerTeamPerCycle = (totalTeams - 1) * 2;
@@ -94,11 +88,7 @@ export async function POST(request: NextRequest) {
       let matchIndex = 0;
       let cycleDateIndex = 0;
 
-      while (
-        matchIndex < cycleMatches.length &&
-        cycleDateIndex < daysNeededPerCycle &&
-        dateIndex < availableDates.length
-      ) {
+      while (matchIndex < cycleMatches.length && cycleDateIndex < daysNeededPerCycle && dateIndex < availableDates.length) {
         const currentDate = availableDates[dateIndex];
         const matchesOnThisDate = [];
 
@@ -158,7 +148,9 @@ export async function POST(request: NextRequest) {
         homeTeam: true,
         awayTeam: true,
         result: {
-          include: { goals: { include: { player: true } } }
+          include: {
+            goals: { include: { player: true } }
+          }
         }
       },
       orderBy: { matchDate: "asc" }
@@ -180,7 +172,7 @@ export async function POST(request: NextRequest) {
       }))
     };
 
-    return NextResponse.json({ matches: allMatchesWithDetails, summary });
+    return NextResponse.json({ summary, matches: allMatchesWithDetails });
   } catch (error) {
     console.error("Error generating matches:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
