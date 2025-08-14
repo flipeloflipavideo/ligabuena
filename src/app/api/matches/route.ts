@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
       scheduleStart,
       seasonEnd,
       league.season.nonSchoolDays,
-      [5], // Viernes
+      [5], // Friday games
       Math.ceil(teams.length / 2)
     );
 
@@ -158,9 +158,7 @@ export async function POST(request: NextRequest) {
         homeTeam: true,
         awayTeam: true,
         result: {
-          include: {
-            goals: { include: { player: true } }
-          }
+          include: { goals: { include: { player: true } } }
         }
       },
       orderBy: { matchDate: "asc" }
@@ -177,15 +175,12 @@ export async function POST(request: NextRequest) {
       teams: teams.map(team => ({
         id: team.id,
         name: team.name,
-        homeMatches: allMatchesWithDetails.filter(m => m.homeTeamId === team.id),
-        awayMatches: allMatchesWithDetails.filter(m => m.awayTeamId === team.id)
+        homeMatches: allMatchesWithDetails.filter(m => m.homeTeamId === team.id).length,
+        awayMatches: allMatchesWithDetails.filter(m => m.awayTeamId === team.id).length
       }))
     };
 
-    return NextResponse.json({
-      message: "Matches generated successfully",
-      summary
-    });
+    return NextResponse.json({ matches: allMatchesWithDetails, summary });
   } catch (error) {
     console.error("Error generating matches:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
