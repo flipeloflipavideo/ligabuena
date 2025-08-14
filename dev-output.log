@@ -1,0 +1,28 @@
+
+> nextjs_tailwind_shadcn_ts@0.1.0 dev
+> next dev
+
+ ⚠ Port 3000 is in use, using available port 3004 instead.
+   ▲ Next.js 15.3.5
+   - Local:        http://localhost:3004
+   - Network:      http://21.0.9.107:3004
+   - Environments: .env
+
+ ✓ Starting...
+ ✓ Ready in 1643ms
+ ○ Compiling /api/standings ...
+ ✓ Compiled /api/standings in 2.1s (365 modules)
+prisma:query SELECT "public"."Season"."id", "public"."Season"."name", "public"."Season"."startDate", "public"."Season"."endDate", "public"."Season"."isActive", "public"."Season"."createdAt", "public"."Season"."updatedAt" FROM "public"."Season" WHERE "public"."Season"."isActive" = $1 LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."League"."id", "public"."League"."name", "public"."League"."sport"::text, "public"."League"."category"::text, "public"."League"."seasonId", "public"."League"."createdAt", "public"."League"."updatedAt" FROM "public"."League" WHERE ("public"."League"."sport" = CAST($1::text AS "public"."SportType") AND "public"."League"."seasonId" IN ($2)) OFFSET $3
+prisma:query SELECT "public"."Team"."id", "public"."Team"."name", "public"."Team"."leagueId", "public"."Team"."createdAt", "public"."Team"."updatedAt" FROM "public"."Team" WHERE "public"."Team"."leagueId" IN ($1,$2,$3) OFFSET $4
+prisma:query SELECT "public"."Player"."id", "public"."Player"."name", "public"."Player"."teamId", "public"."Player"."createdAt", "public"."Player"."updatedAt" FROM "public"."Player" WHERE "public"."Player"."teamId" IN ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) OFFSET $13
+prisma:query SELECT "public"."Match"."id", "public"."Match"."leagueId", "public"."Match"."homeTeamId", "public"."Match"."awayTeamId", "public"."Match"."matchDate", "public"."Match"."venue", "public"."Match"."isCompleted", "public"."Match"."createdAt", "public"."Match"."updatedAt" FROM "public"."Match" WHERE "public"."Match"."leagueId" IN ($1,$2,$3) OFFSET $4
+prisma:query SELECT "public"."Team"."id", "public"."Team"."name", "public"."Team"."leagueId", "public"."Team"."createdAt", "public"."Team"."updatedAt" FROM "public"."Team" WHERE "public"."Team"."id" IN ($1,$2,$3,$4,$5,$6) OFFSET $7
+prisma:query SELECT "public"."Team"."id", "public"."Team"."name", "public"."Team"."leagueId", "public"."Team"."createdAt", "public"."Team"."updatedAt" FROM "public"."Team" WHERE "public"."Team"."id" IN ($1,$2,$3,$4,$5,$6) OFFSET $7
+prisma:query SELECT "public"."MatchResult"."id", "public"."MatchResult"."matchId", "public"."MatchResult"."homeScore", "public"."MatchResult"."awayScore", "public"."MatchResult"."createdAt", "public"."MatchResult"."updatedAt" FROM "public"."MatchResult" WHERE "public"."MatchResult"."matchId" IN ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) OFFSET $19
+prisma:query SELECT "public"."Goal"."id", "public"."Goal"."playerId", "public"."Goal"."matchResultId", "public"."Goal"."minute", "public"."Goal"."createdAt" FROM "public"."Goal" WHERE "public"."Goal"."matchResultId" IN ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) OFFSET $19
+prisma:query SELECT "public"."Player"."id", "public"."Player"."name", "public"."Player"."teamId", "public"."Player"."createdAt", "public"."Player"."updatedAt" FROM "public"."Player" WHERE "public"."Player"."id" IN ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35) OFFSET $36
+ GET /api/standings?sport=football 200 in 9208ms
+ ○ Compiling / ...
+ ✓ Compiled / in 3.4s (947 modules)
+ GET / 200 in 3809ms
