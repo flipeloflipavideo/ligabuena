@@ -354,10 +354,10 @@ export default function Home() {
                   <Card className="bg-white/90 backdrop-blur-sm border-2 border-purple-100 shadow-lg hover:shadow-xl transition-shadow duration-300">
                     <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-t-lg border-b border-purple-100">
                       <CardTitle className="flex items-center gap-2 text-purple-800">
-                        ⭐ Tabla de {getGoalLabel(selectedSport)}
+                        ⭐ Tabla de Goleadores
                       </CardTitle>
                       <CardDescription className="text-purple-600">
-                        Jugadores con más {getGoalLabel(selectedSport).toLowerCase()}
+                        Máximos anotadores en {getSportLabel(selectedSport)}
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="p-4">
@@ -371,11 +371,6 @@ export default function Home() {
             ))}
           </div>
         )}
-
-        {/* Footer */}
-        <div className="text-center mt-12 text-gray-600">
-          <p className="text-lg font-medium">© 2024 Liga Deportiva Escolar. Todos los derechos reservados.</p>
-        </div>
       </div>
     </div>
   )
