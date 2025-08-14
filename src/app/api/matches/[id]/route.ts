@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 
-interface RouteContext {
-  params: Record<string, string>;
-}
-
-export async function PUT(request: NextRequest, { params }: RouteContext) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     const body = await request.json();
     const { homeScore, awayScore, goals } = body;
@@ -18,9 +17,7 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
       where: { id: params.id },
       include: {
         result: {
-          include: {
-            goals: { include: { player: true } }
-          }
+          include: { goals: { include: { player: true } } }
         }
       }
     });
@@ -42,7 +39,7 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
       });
     }
 
-    if (goals && goals.length > 0) {
+    if (goals?.length) {
       await Promise.all(
         goals.map((goal: any) =>
           db.goal.create({
@@ -66,11 +63,7 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
       include: {
         homeTeam: true,
         awayTeam: true,
-        result: {
-          include: {
-            goals: { include: { player: true } }
-          }
-        }
+        result: { include: { goals: { include: { player: true } } } }
       }
     });
 
@@ -81,13 +74,14 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: RouteContext) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     const match = await db.match.findUnique({
       where: { id: params.id },
-      include: {
-        result: { include: { goals: true } }
-      }
+      include: { result: { include: { goals: true } } }
     });
 
     if (!match) {
