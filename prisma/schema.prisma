@@ -9,24 +9,134 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+// Temporada escolar
+model Season {
+  id          String   @id @default(cuid())
+  name        String   // Ej: "2024-2025"
+  startDate   DateTime
+  endDate     DateTime
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  leagues     League[]
+  nonSchoolDays NonSchoolDay[]
 }
 
-model Post {
-  id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+// Tipos de deportes
+enum SportType {
+  FOOTBALL
+  BASKETBALL
+}
+
+// Categorías por edad
+enum Category {
+  CATEGORY_1_2   // 1°-2° grado
+  CATEGORY_3_4   // 3°-4° grado
+  CATEGORY_5_6   // 5°-6° grado
+}
+
+// Liga (combinación de deporte y categoría)
+model League {
+  id         String   @id @default(cuid())
+  name       String   // Ej: "Fútbol 1-2"
+  sport      SportType
+  category   Category
+  seasonId   String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  
+  season     Season   @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  teams      Team[]
+  matches    Match[]
+  
+  @@unique([seasonId, sport, category])
+}
+
+// Equipo
+model Team {
+  id         String   @id @default(cuid())
+  name       String
+  leagueId   String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  
+  league     League   @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  players    Player[]
+  homeMatches Match[] @relation("HomeMatches")
+  awayMatches Match[] @relation("AwayMatches")
+  
+  @@unique([leagueId, name])
+}
+
+// Jugador
+model Player {
+  id         String   @id @default(cuid())
+  name       String
+  teamId     String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  
+  team       Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  goals      Goal[]
+}
+
+// Partido
+model Match {
+  id           String      @id @default(cuid())
+  leagueId     String
+  homeTeamId   String
+  awayTeamId   String
+  matchDate    DateTime
+  venue        String?     // Lugar del partido
+  isCompleted  Boolean     @default(false)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  
+  league       League      @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  homeTeam     Team        @relation("HomeMatches", fields: [homeTeamId], references: [id], onDelete: Cascade)
+  awayTeam     Team        @relation("AwayMatches", fields: [awayTeamId], references: [id], onDelete: Cascade)
+  result       MatchResult?
+}
+
+// Resultado del partido
+model MatchResult {
+  id          String   @id @default(cuid())
+  matchId     String   @unique
+  homeScore   Int      // Goles/canastas del equipo local
+  awayScore   Int      // Goles/canastas del equipo visitante
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  match       Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  goals       Goal[]
+}
+
+// Gol/Canasta anotada
+model Goal {
+  id          String   @id @default(cuid())
+  playerId    String
+  matchResultId String
+  minute      Int?     // Minuto en que se anotó
+  createdAt   DateTime @default(now())
+  
+  player      Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  matchResult MatchResult @relation(fields: [matchResultId], references: [id], onDelete: Cascade)
+}
+
+// Fechas no lectivas (vacaciones, días festivos, etc.)
+model NonSchoolDay {
+  id          String   @id @default(cuid())
+  date        DateTime // Fecha específica
+  description String   // Ej: "Vacaciones de Navidad", "Semana Santa", "Consejo Técnico"
+  seasonId    String
+  createdAt   DateTime @default(now())
+  
+  season      Season   @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  
+  @@unique([seasonId, date])
 }

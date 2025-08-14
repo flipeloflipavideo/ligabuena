@@ -1,0 +1,74 @@
+# Configuración de despliegue para Render
+# Este archivo define cómo se despliega la aplicación en Render
+
+services:
+  # Servicio principal de la aplicación web
+  - type: web
+    name: sistema-ligas-deportivas
+    runtime: node
+    region: oregon  # Puedes cambiar la región según tu preferencia
+    
+    # Comandos de construcción y ejecución
+    buildCommand: |
+      npm install && 
+      npx prisma generate && 
+      npx prisma db push && 
+      npm run build
+    startCommand: npm start
+    
+    # Configuración del entorno
+    env: node
+    nodeVersion: 18
+    
+    # Variables de entorno (estas se configuran en el dashboard de Render)
+    envVars:
+      - key: DATABASE_URL
+        sync: false  # No sincronizar, debe configurarse manualmente
+      - key: NEXTAUTH_SECRET
+        sync: false  # No sincronizar, debe configurarse manualmente
+      - key: NEXTAUTH_URL
+        sync: false  # No sincronizar, debe configurarse manualmente
+      - key: NODE_ENV
+        value: production
+    
+    # Configuración de salud
+    healthCheck:
+      path: /api/health
+      interval: 30
+      timeout: 10
+      gracePeriod: 60
+    
+    # Configuración de recursos
+    instanceType: starter
+    numInstances: 1
+    
+    # Dominio personalizado (opcional)
+    # customDomains:
+    #   - tu-dominio.com
+
+# Notas importantes para el despliegue:
+#
+# 1. VARIABLES DE ENTORNO OBLIGATORIAS:
+#    - DATABASE_URL: URL de tu base de datos PostgreSQL (Neon recomendado)
+#    - NEXTAUTH_SECRET: Secreto para NextAuth.js (generar con: openssl rand -base64 32)
+#    - NEXTAUTH_URL: URL de tu aplicación desplegada (https://tu-app.onrender.com)
+#
+# 2. BASE DE DATOS:
+#    - Se recomienda usar Neon PostgreSQL para mejor rendimiento
+#    - La URL debe incluir sslmode=require para conexiones seguras
+#    - Ejemplo: postgresql://usuario:contraseña@host.neon.tech/db?sslmode=require
+#
+# 3. PRIMER DESPLIEGUE:
+#    - El primer despliegue puede tardar más tiempo
+#    - Prisma generará el cliente y creará las tablas automáticamente
+#    - Verifica los logs si hay errores
+#
+# 4. MONITOREO:
+#    - Revisa los logs de construcción y ejecución
+#    - Verifica que la aplicación responde en la URL asignada
+#    - Prueba los endpoints de la API
+#
+# 5. ACTUALIZACIONES:
+#    - Cada push a la rama principal desencadenará un nuevo despliegue
+#    - Los cambios en el schema de Prisma requieren db push
+#    - Las variables de entorno se actualizan sin necesidad de redeploy
