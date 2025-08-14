@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
     const daysNeededPerCycle = Math.ceil(totalMatchesPerCycle / maxMatchesPerDay);
     const totalCycles = Math.floor(availableDates.length / daysNeededPerCycle);
 
-    const scheduledMatches = [];
+    const scheduledMatches: any[] = [];
     let dateIndex = 0;
     let totalMatchesScheduled = 0;
 
@@ -147,11 +147,7 @@ export async function POST(request: NextRequest) {
       include: {
         homeTeam: true,
         awayTeam: true,
-        result: {
-          include: {
-            goals: { include: { player: true } }
-          }
-        }
+        result: { include: { goals: { include: { player: true } } } }
       },
       orderBy: { matchDate: "asc" }
     });
@@ -167,8 +163,8 @@ export async function POST(request: NextRequest) {
       teams: teams.map(team => ({
         id: team.id,
         name: team.name,
-        homeMatches: allMatchesWithDetails.filter(m => m.homeTeamId === team.id).length,
-        awayMatches: allMatchesWithDetails.filter(m => m.awayTeamId === team.id).length
+        homeMatches: allMatchesWithDetails.filter(m => m.homeTeamId === team.id),
+        awayMatches: allMatchesWithDetails.filter(m => m.awayTeamId === team.id)
       }))
     };
 
